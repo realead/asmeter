@@ -1,5 +1,6 @@
 
 import argparse
+import sys
 
 parser = argparse.ArgumentParser(description='AT&T assembler creator')
 parser.add_argument('-c', type=str,
@@ -13,9 +14,12 @@ parser.add_argument('-i', type=int, default=10**4,
                                         
 args = parser.parse_args()
 
-
-if "%rcx" in args.c:
-    print "Warning: the usage of %rcx detected, it may interfere with the boilerplate wrapper, consider to use any other register"
+bad_strings=["%rcx", "%ecx", "%cx", "%cl", "%ch"]
+for bad in bad_strings:
+    if bad in args.c:
+        print >> sys.stderr, "Error: An usage of", bad, "detected, it may interfere with the boilerplate wrapper, please use any other register"
+        print >> sys.stderr, "exiting, no asm_file created"
+        exit(42)
 
 with open(args.f, "w") as f:
     f.write("""
