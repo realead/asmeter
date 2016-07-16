@@ -44,6 +44,24 @@ The similar output can be seen:
 
 With  `4` - number of bytes in the executables per instruction, `0.35` nanoseconds per instruction.
 
+#### More than one instruction
+
+It is possible to put more than one instruction into the loop, e.g.
+
+    for(outer_loop=0; outer_loop<NO;outer_loop++){
+        instruction 1  #first call
+        instruction 2
+        instruction 1  #second call
+        instruction 2
+        ...
+        instruction 1  #NI-th call
+        instruction 2
+    } 
+
+For this call your instructions with separator `S`, e.g.:
+
+    sh analyse_instruction.sh "mov %rax, %rbx S mov %rbx, %rdx" 1000 100
+
 ## Conclusions
 
 #### Meanings of running times
@@ -89,7 +107,7 @@ It is different for the division through: Here 16 and 32 bit a ca. 40% faster th
   
 #### Floating point operations
 
-There is almost no difference between multiply and add - each operation costs ca. 1.05ns.  There is also no difference for these operations between double and single precision.
+There is almost no difference between multiply and add - each operation costs ca. 1.05ns.  There is also no difference for these operations between double and single precision. Also a combimation of mutliply and add didn't change the costs.
 
 However there is factor 50 difference between multiply and divide for double and almost factor 4 difference for single.
 
@@ -213,7 +231,15 @@ These tables show the time needed per operation in nanoseconds. The time per ope
     addss(4bytes)          1.07             1.08        1.07            1.05          1.05           1.05
     addsd(4bytes)          1.08             1.08        1.07            1.05          1.05           1.04
     
+#### addsd+multsd vs addss+multss
+
+--- e.g. `addsd %xmm1, %xmm0 S multsd %xmm1, %xmm0`: 
+
+    command         NI=10^8, NO=50*    (10^7,500)  (10^6,5*10^3)  (10^5,5*10^4)  (10^4,5*10^5)  (10^3,5*10^6) 
+    single(8bytes)        2.15             2.15        2.15            2.07          2.07           2.07
+    double(8bytes)        2.16             2.15        2.19            2.09          2.08           2.06
     
+        
 ## Future
 
   1. further operations

@@ -1,4 +1,9 @@
 
+
+def decode_code(code):
+    return[ "\t"+x+"\n" for x in code.split("S")]    
+    
+    
 import argparse
 import sys
 
@@ -49,7 +54,7 @@ _start:
     decq %rcx\n""")
     
     for k in xrange(args.r):
-        f.write("\t"+args.c+"\n")
+        f.writelines(decode_code(args.c))
         
     f.write(
 """    jmp loop_start
