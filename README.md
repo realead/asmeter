@@ -62,6 +62,18 @@ For this call your instructions with separator `S`, e.g.:
 
     sh analyse_instruction.sh "mov %rax, %rbx S mov %rbx, %rdx" 1000 100
 
+#### Initialisation
+
+it is possible to run initialisation code prior to the entry into the loop. For example for `div %rbx` we need `rbx` to be non-zero and `rdx` to be 0. That could be achieved by setting those values only once
+
+    sh analyse_instruction.sh "div %rbx" 1000 1000 "mov \$1, %rbx S xor %edx, %edx"
+
+as compared to
+
+    sh analyse_instruction.sh "mov \$1, %rbx S xor %edx, %edx S div %rbx" 1000 1000
+    
+which would set the registers in every iteration.
+
 ## Conclusions
 
 #### Meanings of running times

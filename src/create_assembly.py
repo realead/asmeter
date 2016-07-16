@@ -3,6 +3,14 @@
 def decode_code(code):
     return[ "\t"+x+"\n" for x in code.split("S")]    
     
+
+def check_code(code, code_name):
+    bad_strings=["%rcx", "%ecx", "%cx", "%cl", "%ch"]
+    for bad in bad_strings:
+        if bad in code:
+            print >> sys.stderr, "Error: An usage of", bad, "in", code_name, "detected, it may interfere with the boilerplate wrapper, please use any other register"
+            print >> sys.stderr, "exiting, no asm_file created"
+            exit(42)
     
 import argparse
 import sys
@@ -10,6 +18,8 @@ import sys
 parser = argparse.ArgumentParser(description='AT&T assembler creator')
 parser.add_argument('-c', type=str,
                     help='command which should be injected')
+parser.add_argument('-a', type=str, default="",
+                    help='initialization code')
 parser.add_argument('-f', type=str, default="out.s",
                     help='file name of the resulting assembly')
 parser.add_argument('-r', type=int, default=10**4, 
@@ -19,12 +29,11 @@ parser.add_argument('-i', type=int, default=10**4,
                                         
 args = parser.parse_args()
 
-bad_strings=["%rcx", "%ecx", "%cx", "%cl", "%ch"]
-for bad in bad_strings:
-    if bad in args.c:
-        print >> sys.stderr, "Error: An usage of", bad, "detected, it may interfere with the boilerplate wrapper, please use any other register"
-        print >> sys.stderr, "exiting, no asm_file created"
-        exit(42)
+check_code(args.c, "command")
+check_code(args.a, "initialization command")
+
+decoded_code=decode_code(args.c)
+decoded_ini_code=decode_code(args.a)
 
 with open(args.f, "w") as f:
     f.write("""
@@ -45,6 +54,7 @@ _start:
     call clock
     pushq %rax\n""") 
     
+    f.writelines(decoded_ini_code)
     
     f.write("\tmovq ${0}, %rcx\n".format(args.i))
     f.write(
@@ -54,7 +64,7 @@ _start:
     decq %rcx\n""")
     
     for k in xrange(args.r):
-        f.writelines(decode_code(args.c))
+        f.writelines(decoded_code)
         
     f.write(
 """    jmp loop_start
