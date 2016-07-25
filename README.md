@@ -82,7 +82,7 @@ Given the results, which can be found further down, one can conclude the followi
 
 The running time is composed of two parts:
 
-   1. loading instructions (into the cache?)
+   1. loading instructions (into the instruction-cache, 32kB for my machine), decoding them
    2. executing instructions
    
 This can be easily seen by comparing the result for high number of inner instructions (`NI`) and for low number of inner instruction.
@@ -113,9 +113,10 @@ It is different for the division through: Here 16 and 32 bit a ca. 40% faster th
   1. mov - 0.1 ns
   2. xor - 0.35ns, however xor of register with itself needs 0.1s but needs 1 byte less
   3. add - 0.35ns
-  4. imul - 1.05ns
-  5. mul - 1.05ns (64bit), 1.4ns (32bit)
-  6. div - 7.5ns (32bit), 10ns (64bit)
+  4. sub - 0.35ns (but not the register from itself - 0.1ns)
+  5. imul - 1.05ns
+  6. mul - 1.05ns (64bit), 1.4ns (32bit)
+  7. div - 7.5ns (32bit), 10ns (64bit)
   
 #### Floating point operations
 
@@ -164,20 +165,39 @@ These tables show the time needed per operation in nanoseconds. The time per ope
     xorq(4bytes)        0.46               0.45        0.39           0.35           0.35           0.35 
     
 #### movq vs movl vs movw 
--- moving a const (e.g. `xor $0, %rax`):
+-- moving 0 (e.g. `mor $0, %rax`):
 
     command         NI=10^8, NO=50*    (10^7,500)  (10^6,5*10^3)  (10^5,5*10^4)  (10^4,5*10^5)  (10^3,5*10^6) 
     movw(4bytes)          1.35             1.18        1.15            1.15          1.15           0.35
     movl(5bytes)          0.57             0.52        0.46            0.27          0.12           0.09
     movq(7bytes)          0.86             0.72        0.69            0.37          0.19           0.09 
  
+
+-- moving a const (e.g. `mov $1, %rax` or also `mov $212, %rax`):
+
+    command         NI=10^8, NO=50*    (10^7,500)  (10^6,5*10^3)  (10^5,5*10^4)  (10^4,5*10^5)  (10^3,5*10^6) 
+    movw(4bytes)          1.19             1.19        1.15            1.13          1.13           0.35
+    movl(5bytes)          0.56             0.51        0.44            0.28          0.13           0.09
+    movq(7bytes)          0.7              0.70        0.68            0.37          0.19           0.09 
+ 
+ 
     
--- moving between registers (e.g. `xor %rbx, %rax`):
+-- moving between registers (e.g. `mov %rbx, %rax`):
 
     command         NI=10^8, NO=50*    (10^7,500)  (10^6,5*10^3)  (10^5,5*10^4)  (10^4,5*10^5)  (10^3,5*10^6) 
     movw(3bytes)          0.39             0.40        0.35            0.35          0.35           0.35
     movl(2bytes)          0.21             0.21        0.13            0.11          0.09           0.09
     movq(3bytes)          0.29             0.29        0.20            0.16          0.10           0.09 
+ 
+    
+-- moving between registers (e.g. `mov $212,%rax S mov $0,%rax`):
+
+    command         NI=10^8, NO=50*    (10^7,500)  (10^6,5*10^3)  (10^5,5*10^4)  (10^4,5*10^5)  (10^3,5*10^6) 
+    movw(8bytes)          XXXX             2.40        2.35            2.30          2.27           1.82
+    movl(10bytes)         XXXX             1.00        1.00            0.54          0.26           0.20
+    movq(14bytes)         XXXX             1.58        1.38            0.75          0.37           0.26 
+ 
+
     
 #### imulq vs imull vs imulw  
 
@@ -215,7 +235,23 @@ These tables show the time needed per operation in nanoseconds. The time per ope
     addl(2bytes)          0.38             0.38        0.35            0.35          0.35           0.35
     addq(3bytes)          0.40             0.40        0.36            0.35          0.35           0.35 
     
+#### subq vs subl vs subw  
  
+-- sub const `sub $123, %rax`:
+
+    command         NI=10^8, NO=50*    (10^7,500)  (10^6,5*10^3)  (10^5,5*10^4)  (10^4,5*10^5)  (10^3,5*10^6) 
+    subw(4bytes)          0.44             0.44        0.42            0.35          0.35           0.35
+    subl(3bytes)          0.39             0.41        0.35            0.35          0.35           0.35
+    subq(4bytes)          0.44             0.45        0.40            0.35          0.35           0.34 
+     
+     
+-- from itself `sub %rax, %rax`:
+
+    command         NI=10^8, NO=50*    (10^7,500)  (10^6,5*10^3)  (10^5,5*10^4)  (10^4,5*10^5)  (10^3,5*10^6) 
+    subw(3bytes)          0.43             0.41        0.39            0.35          0.35           0.35
+    subl(2bytes)          0.26             0.24        0.17            0.13          0.12           0.10
+    subq(3bytes)          0.36             0.36        0.26            0.20          0.13           0.10
+     
 ### Float operations
     
 #### mulsd vs mulss
