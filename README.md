@@ -132,11 +132,13 @@ The only exception are unsigned multiplication, for which the 64bit version is c
 It is different for the division through: Here 16 and 32 bit a ca. 40% faster than 64 bit operations.
 
 ##### Costs of the operations:
+  1. nop - 0.1 ns
   1. mov - 0.1 ns
   2. xor - 0.35ns, however xor of register with itself needs 0.1s but needs 1 byte less
   3. add - 0.35ns
   4. sub - 0.35ns (but not the register from itself - 0.1ns)
   5. imul - 1.05ns
+  6. jmp short - 0.9ns
   6. mul - 1.05ns (64bit), 1.4ns (32bit)
   7. div - 7.5ns (32bit), 10ns (64bit)
   
@@ -151,8 +153,17 @@ No impact of different float values (such as NaN) on the running time could be o
 ## Results
 
 These tables show the time needed per operation in nanoseconds. The time per operation varies depending on parameters `N0` and `NI`. 
-
+### Program flow
+  
 ### Integer operations
+-- `nop` / `jmp L{loop_id} S L{loop_id}`:
+
+
+|command   | (10^5,5*10^4) | (10^4,5*10^5) | (10^3,5*10^6) |
+|----------|---------------|---------------|---------------|
+|nop(1byte)| 0.09          | 0.09          | 0.09          |
+|jmp(2bytes)| 4.3131864    | 3.6333954     | 0.9483808     |
+
 
 #### xorq vs xorl vs xorw
 
