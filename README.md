@@ -62,6 +62,28 @@ For this call your instructions with separator `S`, e.g.:
 
     sh analyse_instruction.sh "mov %rax, %rbx S mov %rbx, %rdx" 1000 100
 
+#### Referencing to loop_id in operation
+it is possible to reference to the counter of the inner loop in the operations, e.g. 
+
+    for(outer_loop=0; outer_loop<NO;outer_loop++){
+        jmp label0  #first call
+        operation_before_label
+      label0:
+        operation_after_label
+        
+        jmp label1  #second call
+        operation_before_label
+      label1:
+        operation_after_label
+        ...
+    } 
+    
+This can be achieved by using `{loop_id}` identifier as if in `string.format` function:
+
+    sh analyse_instruction.sh "jmp label{loop_id} S operation_before_label S label{loop_id}: S operation_after_label" 1000 100
+   
+   
+    
 #### Initialisation
 
 it is possible to run initialisation code prior to the entry into the loop. For example for `div %rbx` we need `rbx` to be non-zero and `rdx` to be 0. That could be achieved by setting those values only once

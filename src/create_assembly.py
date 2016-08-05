@@ -64,7 +64,8 @@ _start:
     decq %rcx\n""")
     
     for k in xrange(args.r):
-        f.writelines(decoded_code)
+        code_lines=[line.format(loop_id=k) for line in decoded_code]
+        f.writelines(code_lines)
         
     f.write(
 """    jmp loop_start
