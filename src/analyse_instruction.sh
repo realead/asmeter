@@ -13,7 +13,7 @@ echo "\n############## ANALYZING '$1' #######################:\n"
 echo "Inside loop: $INSIDE_LOOP, loop cnt $LOOP_RUNS "
 
 python2.7 create_assembly.py -c "$1" -f asm_file.s -r $INSIDE_LOOP -i $LOOP_RUNS -a "$INI_CODE"
-gcc-4.9 -nostdlib asm_file.s -o prog -lc
+gcc -O2 -nostdlib asm_file.s -o prog -lc
 
 ### command size:
 FILESIZE=$(stat -c%s prog)
