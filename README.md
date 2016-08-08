@@ -150,12 +150,34 @@ However there is factor 50 difference between multiply and divide for double and
 
 No impact of different float values (such as NaN) on the running time could be obserrvved (More testing needed).
 
+#### Branch Target Buffer (BTB)
+
+It is also possible to see the saturation of the branch target buffer (see http://stackoverflow.com/questions/38811901/slow-jmp-instruction or http://xania.org/201602/haswell-and-ivy-btb) 
+
+In the following table costs per instruction for different ǸI values relative to the costs per instruction for NI=1000 are shown: 
+
+|oprations/ NI        | 1000 |  2000|  3000|  4000|  5000| 10000|
+|---------------------|------|------|------|------|------|------|
+|jmp                  |  1.0 |  1.0 |  1.0 |  1.2 |  1.9 |   3.8|
+|jmp+xor              |  1.0 |  1.2 |  1.3 |  1.6 |  2.8 |   5.3|
+|jmp+cmp+je (jump)    |  1.0 |  1.5 |  4.0 |  4.4 |  5.5 |   5.5|
+|jmp+cmp+je (no jump) |  1.0 |  1.2 |  1.3 |  1.5 |  3.8 |   7.6|
+
+
+It can be seen:
+
+   1. For the jmp instruction, a (yet unknown) resource becomes scarce and this leads to a performance degradation for ǸI larger than 4000.
+   2.  This resource is not shared with such instructions as xor - the performance degradation kicks in still for NI about 4000, if jmp and xor are executed after each other.
+   3. But this resource is shared with je if the jump is made - for jmp+je after each other, the resource becomes scarce for NI about 2000.
+   4. However, if je does not jump at all, the resource is becoming scarce once again for NI being about 4000 (4th line).
+
+
 ## Results
 
 These tables show the time needed per operation in nanoseconds. The time per operation varies depending on parameters `N0` and `NI`. 
+
 ### Program flow
   
-### Integer operations
 -- `nop` / `jmp L{loop_id} S L{loop_id}`:
 
 
@@ -164,6 +186,9 @@ These tables show the time needed per operation in nanoseconds. The time per ope
 |nop(1byte)| 0.09          | 0.09          | 0.09          |
 |jmp(2bytes)| 4.3131864    | 3.6333954     | 0.9483808     |
 
+
+
+### Integer operations
 
 #### xorq vs xorl vs xorw
 
