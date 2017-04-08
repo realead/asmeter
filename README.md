@@ -131,7 +131,7 @@ The only exception are unsigned multiplication, for which the 64bit version is c
 
 It is different for the division through: Here 16 and 32 bit a ca. 40% faster than 64 bit operations.
 
-##### Costs of the operations:
+##### Costs of the operations (on an Intel Broadwell):
   1. nop - 0.1 ns
   1. mov - 0.1 ns
   2. xor - 0.35ns, however xor of register with itself needs 0.1s but needs 1 byte less
