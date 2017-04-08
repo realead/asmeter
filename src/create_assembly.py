@@ -47,9 +47,14 @@ FLOAT:#1.00001
     .long	1065353300
 NAN_DOUBLE:
     .long	0
-	.long	2146959360
+    .long	2146959360
+
+.section .data
+TARGET:
+    .zero 256
+
+.globl _start
 .section .text
-    .globl _start
 _start:
     call clock
     pushq %rax\n""") 
