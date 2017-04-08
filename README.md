@@ -44,7 +44,8 @@ The similar output can be seen:
 
 With  `4` - number of bytes in the executables per instruction, `0.35` nanoseconds per instruction.
 
-#### More than one instruction
+## Syntax
+#### 1. More than one instruction
 
 It is possible to put more than one instruction into the loop, e.g.
 
@@ -62,7 +63,7 @@ For this call your instructions with separator `S`, e.g.:
 
     sh analyse_instruction.sh "mov %rax, %rbx S mov %rbx, %rdx" 1000 100
 
-#### Referencing to loop_id in operation
+#### 2. Referencing to loop_id in operation
 it is possible to reference to the counter of the inner loop in the operations, e.g. 
 
     for(outer_loop=0; outer_loop<NO;outer_loop++){
@@ -84,7 +85,7 @@ This can be achieved by using `{loop_id}` identifier as if in `string.format` fu
    
    
     
-#### Initialisation
+#### 3. Initialisation
 
 it is possible to run initialisation code prior to the entry into the loop. For example for `div %rbx` we need `rbx` to be non-zero and `rdx` to be 0. That could be achieved by setting those values only once
 
@@ -95,6 +96,28 @@ as compared to
     sh analyse_instruction.sh "mov \$1, %rbx S xor %edx, %edx S div %rbx" 1000 1000
     
 which would set the registers in every iteration.
+
+#### 4. Predefined constants
+
+There are the following predefined labels, which can be used:
+
+  1. `DOUBLE` a double (64bit) with value `1.00001`
+  2. `FLOAT` a float (32bit) with value `1.00001`
+  3. `NAN_DOUBLE` a  double NaN-value
+
+They can be used as in
+
+    sh analyse_instruction.sh "movsd NAN_DOUBLE, %xmm0" 1000 1000
+
+This memory is read only.
+
+#### 5. Prereserved variables
+
+There are 256 byte prereserved, initialized with zero and which can be accessed via label `TARGET` as for example in:
+
+    sh analyse_instruction.sh "movsd %xmm0, TARGET" 1000 1000
+
+This memory can be read and written.
 
 ## Conclusions
 
